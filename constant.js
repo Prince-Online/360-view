@@ -1,7 +1,7 @@
 const PANORAMA_ITEMS = [
   {
     id: "hall-1",
-    title: "Grand Exhibition Hall 1",
+    title: "Vibgyor",
     src: "assets/Hall 1.jpg.jpeg",
     thumbnail: "assets/Hall 1.jpg.jpeg",
     pitch: 0,
@@ -10,7 +10,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "atrium-pavilion",
-    title: "Atrium Pavilion View",
+    title: "Vibgyor",
     src: "assets/20260906_120438_799.jpg.jpeg",
     thumbnail: "assets/20260906_120438_799.jpg.jpeg",
     pitch: -2,
@@ -19,7 +19,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "contemporary-suite",
-    title: "Contemporary Architecture Suite",
+    title: "Sangam",
     src: "assets/20260906_121351_644.jpg.jpeg",
     thumbnail: "assets/20260906_121351_644.jpg.jpeg",
     pitch: 0,
@@ -28,7 +28,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "gallery-corridor",
-    title: "Panoramic Gallery Corridor",
+    title: "Sangam",
     src: "assets/20260906_121851_520.jpg.jpeg",
     thumbnail: "assets/20260906_121851_520.jpg.jpeg",
     pitch: 5,
@@ -37,7 +37,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "horizon-lounge",
-    title: "Lobby Horizon Lounge",
+    title: "Himalaya",
     src: "assets/20260906_122533_373.jpg.jpeg",
     thumbnail: "assets/20260906_122533_373.jpg.jpeg",
     pitch: 0,
@@ -46,7 +46,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "conference-center",
-    title: "Executive Conference Center",
+    title: "Himalaya",
     src: "assets/20260906_161442_066.jpg.jpeg",
     thumbnail: "assets/20260906_161442_066.jpg.jpeg",
     pitch: -3,
@@ -55,7 +55,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "terrace-vista",
-    title: "Open Terrace Vista",
+    title: "Sangam lobby",
     src: "assets/20260906_161625_570.jpg.jpeg",
     thumbnail: "assets/20260906_161625_570.jpg.jpeg",
     pitch: 2,
@@ -64,7 +64,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "interior-courtyard",
-    title: "Interior Courtyard Perspective",
+    title: "Tulip",
     src: "assets/20260906_161815_737.jpg.jpeg",
     thumbnail: "assets/20260906_161815_737.jpg.jpeg",
     pitch: 0,
@@ -73,7 +73,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "mezzanine-hall",
-    title: "Skyline Mezzanine Hall",
+    title: "Banquet lobby",
     src: "assets/20260906_162209_438.jpg.jpeg",
     thumbnail: "assets/20260906_162209_438.jpg.jpeg",
     pitch: -5,
@@ -82,7 +82,7 @@ const PANORAMA_ITEMS = [
   },
   {
     id: "studio-gallery",
-    title: "Architectural Studio Gallery",
+    title: "Poolside",
     src: "assets/20260906_164510_504.jpg.jpeg",
     thumbnail: "assets/20260906_164510_504.jpg.jpeg",
     pitch: 0,
