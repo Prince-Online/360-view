@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>360° Viewer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+  <script src="constant.js"></script>
+</head>
+<body class="viewer-body">
+
+  <div class="v-loading" id="vLoading">
+    <div class="v-spinner"></div>
+    <span class="v-loading-text" id="vLoadingText">Loading panorama…</span>
+  </div>
+
+  <header class="v-top-bar">
+    <div class="v-brand">
+      <a href="index.html" class="v-back">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Gallery
+      </a>
+      <div class="v-scene-info">
+        <div class="v-scene-title" id="vTitle">360° View</div>
+        <div class="v-scene-idx" id="vIdx"></div>
+      </div>
+    </div>
+    <div class="v-top-actions">
+      <label for="viewerFileInput" class="v-icon-btn" title="Upload your 360 image">
+        <svg viewBox="0 0 24 24">
+          <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+        </svg>
+      </label>
+      <input type="file" id="viewerFileInput" accept="image/*" style="display:none" />
+      <button class="v-icon-btn" id="btnFullscreen" title="Fullscreen">
+        <svg viewBox="0 0 24 24" id="fsIcon">
+          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="panorama"></div>
+
+  <div class="v-controls-dock">
+    <button class="d-btn" id="btnZoomIn" title="Zoom In">
+      <svg viewBox="0 0 24 24">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+    </button>
+    <button class="d-btn" id="btnZoomOut" title="Zoom Out">
+      <svg viewBox="0 0 24 24">
+        <path d="M19 13H5v-2h14v2z"/>
+      </svg>
+    </button>
+    <div class="d-sep"></div>
+    <button class="d-btn" id="btnLeft" title="Rotate Left">
+      <svg viewBox="0 0 24 24">
+        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+      </svg>
+    </button>
+    <button class="d-btn" id="btnRight" title="Rotate Right">
+      <svg viewBox="0 0 24 24">
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+      </svg>
+    </button>
+    <button class="d-btn" id="btnUp" title="Tilt Up">
+      <svg viewBox="0 0 24 24">
+        <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+      </svg>
+    </button>
+    <button class="d-btn" id="btnDown" title="Tilt Down">
+      <svg viewBox="0 0 24 24">
+        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
+      </svg>
+    </button>
+    <div class="d-sep"></div>
+    <button class="d-btn on" id="btnAutoRotate" title="Toggle Auto Rotate">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+      </svg>
+    </button>
+    <button class="d-btn" id="btnReset" title="Reset View">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="scene-strip-wrap">
+    <div class="scene-strip-header">
+      <span class="strip-label">Scenes</span>
+      <span class="strip-count" id="stripCount"></span>
+    </div>
+    <div class="scene-strip" id="sceneStrip"></div>
+  </div>
+
+  <script>
+    const items = typeof PANORAMA_ITEMS !== 'undefined' ? PANORAMA_ITEMS : [];
+    let viewer = null;
+    let autoRotating = true;
+    let currentId = null;
+    const ROT_SPEED = -2;
+
+    const params = new URLSearchParams(location.search);
+    const qId = params.get('id');
+    const qCustom = params.get('custom');
+    const qBlob = params.get('blob');
+    const qTitle = params.get('title');
+
+    const vTitle = document.getElementById('vTitle');
+    const vIdx = document.getElementById('vIdx');
+    const vLoading = document.getElementById('vLoading');
+    const vLoadingText = document.getElementById('vLoadingText');
+    const sceneStrip = document.getElementById('sceneStrip');
+    const stripCount = document.getElementById('stripCount');
+    const autoBtn = document.getElementById('btnAutoRotate');
+
+    function resolveInitialScene() {
+      if (qCustom) {
+        return {
+          id: '__custom__',
+          title: sessionStorage.getItem('customTitle') || 'Custom Upload',
+          src: sessionStorage.getItem('customPanorama'),
+          pitch: 0, yaw: 0, hfov: 100
+        };
+      }
+      if (qBlob) {
+        return {
+          id: '__blob__',
+          title: qTitle || 'Local Panorama',
+          src: decodeURIComponent(qBlob),
+          pitch: 0, yaw: 0, hfov: 100
+        };
+      }
+      const found = items.find(i => i.id === qId);
+      return found || items[0] || null;
+    }
+
+    function buildStrip() {
+      sceneStrip.innerHTML = '';
+      stripCount.textContent = `${items.length} of ${items.length}`;
+
+      items.forEach((item, idx) => {
+        const el = document.createElement('div');
+        el.className = 'strip-item';
+        el.setAttribute('data-id', item.id);
+        el.innerHTML = `
+          <img src="${item.thumbnail}" alt="${item.title}" class="strip-thumb" loading="lazy" />
+          <span class="strip-name">${item.title}</span>
+          <span class="strip-active-indicator"></span>
+        `;
+        el.addEventListener('click', () => loadScene(item));
+        sceneStrip.appendChild(el);
+      });
+    }
+
+    function setActiveStrip(id) {
+      document.querySelectorAll('.strip-item').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('data-id') === id);
+      });
+
+      const activeIdx = items.findIndex(i => i.id === id);
+      if (activeIdx >= 0) {
+        stripCount.textContent = `${activeIdx + 1} of ${items.length}`;
+        const activeEl = sceneStrip.querySelector(`.strip-item[data-id="${id}"]`);
+        if (activeEl) {
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }
+
+    function loadScene(scene) {
+      if (!scene || !scene.src) {
+        vLoadingText.textContent = 'Unable to load panorama.';
+        return;
+      }
+
+      currentId = scene.id;
+      vLoading.classList.remove('out');
+      vLoadingText.textContent = 'Loading panorama…';
+
+      vTitle.textContent = scene.title;
+      const idx = items.findIndex(i => i.id === scene.id);
+      vIdx.textContent = idx >= 0 ? `${idx + 1} / ${items.length}` : '';
+      document.title = `${scene.title} | 360° Viewer`;
+
+      if (viewer) {
+        try { viewer.destroy(); } catch {}
+        viewer = null;
+      }
+
+      viewer = pannellum.viewer('panorama', {
+        type: 'equirectangular',
+        panorama: scene.src,
+        autoLoad: true,
+        autoRotate: autoRotating ? ROT_SPEED : 0,
+        compass: false,
+        showZoomCtrl: false,
+        showFullscreenCtrl: false,
+        mouseZoom: true,
+        hfov: scene.hfov || 100,
+        minHfov: 40,
+        maxHfov: 120,
+        pitch: scene.pitch || 0,
+        yaw: scene.yaw || 0
+      });
+
+      viewer.on('load', () => {
+        vLoading.classList.add('out');
+        setActiveStrip(scene.id);
+      });
+
+      viewer.on('error', () => {
+        vLoadingText.textContent = 'Failed to load 360° image.';
+      });
+    }
+
+    document.getElementById('btnZoomIn').addEventListener('click', () => {
+      if (viewer) viewer.setHfov(Math.max(40, viewer.getHfov() - 10));
+    });
+
+    document.getElementById('btnZoomOut').addEventListener('click', () => {
+      if (viewer) viewer.setHfov(Math.min(120, viewer.getHfov() + 10));
+    });
+
+    document.getElementById('btnLeft').addEventListener('click', () => {
+      if (viewer) viewer.setYaw(viewer.getYaw() - 15);
+    });
+
+    document.getElementById('btnRight').addEventListener('click', () => {
+      if (viewer) viewer.setYaw(viewer.getYaw() + 15);
+    });
+
+    document.getElementById('btnUp').addEventListener('click', () => {
+      if (viewer) viewer.setPitch(Math.min(85, viewer.getPitch() + 10));
+    });
+
+    document.getElementById('btnDown').addEventListener('click', () => {
+      if (viewer) viewer.setPitch(Math.max(-85, viewer.getPitch() - 10));
+    });
+
+    autoBtn.addEventListener('click', () => {
+      autoRotating = !autoRotating;
+      autoBtn.classList.toggle('on', autoRotating);
+      if (!viewer) return;
+      if (autoRotating) {
+        viewer.startAutoRotate(ROT_SPEED);
+      } else {
+        viewer.stopAutoRotate();
+      }
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      if (!viewer) return;
+      viewer.setPitch(0);
+      viewer.setYaw(0);
+      viewer.setHfov(100);
+    });
+
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    });
+
+    document.getElementById('viewerFileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        loadScene({
+          id: '__upload__',
+          title: file.name,
+          src: ev.target.result,
+          pitch: 0, yaw: 0, hfov: 100
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    buildStrip();
+    loadScene(resolveInitialScene());
+  </script>
+</body>
+</html>
